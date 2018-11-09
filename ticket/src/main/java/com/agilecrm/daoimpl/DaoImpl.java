@@ -2,7 +2,9 @@ package com.agilecrm.daoimpl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.agilecrm.dao.Dao;
@@ -13,7 +15,6 @@ public class DaoImpl implements Dao {
 
 	static Connection con;
 	static int status;
-	
 
 	@Override
 	public int addTicket(Ticket ticket) throws SQLException, ClassNotFoundException {
@@ -49,8 +50,26 @@ public class DaoImpl implements Dao {
 			// TODO: handle exception
 		}
 		return status;
-		
+
 	}
+
+	@Override
+	public int updateResolution(Ticket ticket) throws ClassNotFoundException, SQLException {
+
+		try {
+			String sql = "update ticket set status=?, resolution=? where ticketId=?";
+			con = MySqlConnection.getConnection();
+			PreparedStatement ps = con.prepareStatement(sql);
+			ps.setString(1, ticket.getStatus());
+			ps.setString(2, ticket.getResolution());
+			ps.setInt(3, ticket.getTicketId());
+			status = ps.executeUpdate();
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return status;
+	}
+
 	@Override
 	public List<Ticket> listTickets() throws SQLException {
 		// TODO Auto-generated method stub
@@ -59,10 +78,13 @@ public class DaoImpl implements Dao {
 
 	@Override
 	public List<Ticket> getTicketById(Ticket ticket) throws SQLException, ClassNotFoundException {
-		// TODO Auto-generated method stub
-		return null;
+		List<Ticket> list = new ArrayList<>();
+		con = MySqlConnection.getConnection();
+		PreparedStatement ps = con.prepareStatement("select * from contact WHERE ticketId=?");
+		ps.setInt(1, ticket.getTicketId());
+		ResultSet rs = ps.executeQuery();
+		return list;
 	}
-
 	@Override
 	public boolean deleteContact(Ticket ticket) {
 		// TODO Auto-generated method stub
@@ -71,25 +93,27 @@ public class DaoImpl implements Dao {
 
 	@Override
 	public boolean sendTickeyByEmail(Ticket ticket) {
+		// TODO Auto-generated method stub
 		return false;
-
 	}
 
-	@Override
-	public int updateResolution(Ticket ticket) throws ClassNotFoundException, SQLException {
-		
-		try {
-			String sql = "update ticket set resolution=? where ticketId=?";
-			con = MySqlConnection.getConnection();
-			PreparedStatement ps = con.prepareStatement(sql);
-			ps.setString(1, ticket.getResolution());
-			ps.setInt(2, ticket.getTicketId());
-			status = ps.executeUpdate();
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-		return status;
-	}
-
+	/*
+	 * public boolean updateTicket(Ticket ticket) { if(ticket.getResolution() ==
+	 * null) { PreparedStatement ps = null; String quary =
+	 * "update ticket set dept = ? ,status ='UNDER PROCESS' where ticketId = ?"; try
+	 * { con = MySqlConnection.getConnection(); ps = con.prepareStatement(quary);
+	 * ps.setString(1, ticket.getDept()); ps.setInt(2, ticket.getTicketId()); int
+	 * status = ps.executeUpdate(); System.out.println(status); return status>0; }
+	 * catch (Exception e) { // TODO: handle exception }
+	 * 
+	 * }else { PreparedStatement ps = null; String quary =
+	 * "update ticket set resolution = ? ,status ='CLOSED' where id = ?"; try { con
+	 * = MySqlConnection.getConnection(); ps = con.prepareStatement(quary);
+	 * ps.setString(1, ticket.getResolution()); ps.setInt(2, ticket.getTicketId());
+	 * int status = ps.executeUpdate(); return status>0; } catch (Exception e) { //
+	 * TODO: handle exception }
+	 * 
+	 * } return false; }
+	 */
 
 }

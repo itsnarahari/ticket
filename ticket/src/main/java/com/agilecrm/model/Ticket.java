@@ -16,6 +16,7 @@ public class Ticket  {
 	private String assignee;
 	private String status;
 	private String resolution;
+	private String problemReport;
 	public int getTicketId() {
 		return ticketId;
 	}
@@ -76,6 +77,15 @@ public class Ticket  {
 	public void setResolution(String resolution) {
 		this.resolution = resolution;
 	}
+	public String getProblemReport() {
+		return problemReport;
+	}
+	public void setProblemReport(String problemReport) {
+		this.problemReport = problemReport;
+	}
+	
+	
+	
 	
 	
 	

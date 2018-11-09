@@ -1,9 +1,11 @@
+
 package com.agilecrm.controller;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -47,6 +49,14 @@ public class TicketController extends HttpServlet {
 		if (action.equals("updateResolution")) {
 			try {
 				updateResolution(req, resp);
+			} catch (ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if (action.equals("getTicketById")) {
+			try {
+				getTicketById(req, resp);
 			} catch (ClassNotFoundException | SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -96,21 +106,36 @@ public class TicketController extends HttpServlet {
 		else
 			out.print("Not Found");
 	}
+
 	protected void updateResolution(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException, ClassNotFoundException, SQLException {
-		
+
 		Ticket ticket = new Ticket();
 		ServiceImpl services = new ServiceImpl();
 		int status = 0;
 		ticket.setTicketId(Integer.parseInt(req.getParameter("id")));
+		ticket.setStatus(req.getParameter("status"));
 		ticket.setResolution(req.getParameter("resolution"));
+
 		PrintWriter out = resp.getWriter();
-		services.updateTicket(ticket);
+		services.updateResolution(ticket);
 		if (status == 0)
 			out.print("Ticket Updated");
 		else
 			out.print("Not Found");
 	}
-	
 
+	protected void getTicketById(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException, ClassNotFoundException, SQLException {
+		String listContact = "/ticketStatus.jsp";
+		Ticket ticket = new Ticket();
+		ServiceImpl services = new ServiceImpl();
+		ticket.setTicketId(Integer.parseInt(req.getParameter("id")));
+		PrintWriter out = resp.getWriter();
+		out.print(services.getTicketById(ticket));
+		//RequestDispatcher view = req.getRequestDispatcher(listContact);
+		//req.setAttribute("ticket", services.getTicketById(ticket));
+		//view.forward(req, resp);
+
+	}
 }
