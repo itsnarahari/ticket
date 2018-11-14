@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 
+import javax.mail.MessagingException;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -13,6 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.agilecrm.model.Ticket;
 import com.agilecrm.servicesimpl.ServiceImpl;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 //o@WebServlet("/contact")
 public class TicketController extends HttpServlet {
@@ -32,11 +35,19 @@ public class TicketController extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		PrintWriter out = resp.getWriter();
+
+		out.print("In Post");
 
 		String action = req.getParameter("action");
 
 		if (action.equals("addTicket")) {
-			addTicket(req, resp);
+			try {
+				addTicket(req, resp);
+			} catch (MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		if (action.equals("updateTicket")) {
 			try {
@@ -62,13 +73,35 @@ public class TicketController extends HttpServlet {
 				e.printStackTrace();
 			}
 		}
+		if (action.equals("getAllTickets")) {
+			try {
+				getAllTickets(req, resp);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if (action.equals("getJson")) {
+			try {
+				getJson(req, resp);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
-	protected void addTicket(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void addTicket(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException, MessagingException {
 
 		Ticket ticket = new Ticket();
 		PrintWriter out = resp.getWriter();
-		out.print("In Post");
 
 		ticket.setName(req.getParameter("name"));
 		ticket.setEmail(req.getParameter("email"));
@@ -76,17 +109,25 @@ public class TicketController extends HttpServlet {
 		ticket.setProblem_type((req.getParameter("problem_type")));
 		ticket.setProblem_desc((req.getParameter("problem_desc")));
 		int status = 0;
+		boolean stat = false;
 		try {
 			status = services.addTicket(ticket);
+			System.out.println(ticket.getTicketId());
+			out.print(ticket.getTicketId());
+			stat = services.sendTicketIdByEmail(ticket);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (status > 0)
-			out.print("Ticket Generated");
-		else
+		if (status > 0) {
+			out.print("Ticket Generated id=");
+			out.print(ticket.getTicketId());
+		} else if (stat == true) {
+			out.print("Mail Sent");
+
+		} else
 			out.print("not done");
 
 	}
@@ -127,15 +168,64 @@ public class TicketController extends HttpServlet {
 
 	protected void getTicketById(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException, ClassNotFoundException, SQLException {
-		String listContact = "/ticketStatus.jsp";
 		Ticket ticket = new Ticket();
-		ServiceImpl services = new ServiceImpl();
 		ticket.setTicketId(Integer.parseInt(req.getParameter("id")));
 		PrintWriter out = resp.getWriter();
-		out.print(services.getTicketById(ticket));
-		//RequestDispatcher view = req.getRequestDispatcher(listContact);
-		//req.setAttribute("ticket", services.getTicketById(ticket));
-		//view.forward(req, resp);
+		services.getTicketById(ticket);
+		out.print(ticket.getName() + " " + ticket.getEmail() + " " + ticket.getMobile() + " " + ticket.getProblem_type()
+				+ " " + ticket.getProblem_desc() + " " + ticket.getDept() + " " + ticket.getStatus() + " "
+				+ ticket.getResolution());
+
+	}
+
+	protected void getAllTickets(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException, ClassNotFoundException, SQLException {
+		Ticket ticket = new Ticket();
+		PrintWriter out = resp.getWriter();
+		services.listTickets();
+		out.print(ticket.getName() + " " + ticket.getEmail() + " " + ticket.getMobile() + " " + ticket.getProblem_type()
+				+ " " + ticket.getProblem_desc() + " " + ticket.getDept() + " " + ticket.getStatus() + " "
+				+ ticket.getResolution());
+	}
+
+	protected void deleteTicket(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException, ClassNotFoundException, SQLException {
+		Ticket ticket = new Ticket();
+		PrintWriter out = resp.getWriter();
+		ticket.setTicketId(Integer.parseInt(req.getParameter("id")));
+		int status = services.deleteTicket(ticket);
+		if (status > 0) {
+			out.print("Record Deleted");
+		} else {
+			out.print("Record Not Found");
+		}
+
+	}
+
+	protected void getJson(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException, ClassNotFoundException, SQLException {
+		ObjectMapper mapper = new ObjectMapper();
+		Ticket ticket= new Ticket();
+		PrintWriter out=resp.getWriter(); 
+		try {
+			
+			//ticket=ticket.setTicketId(Integer.parseInt(req.getParameter("id")));
+			out.print(services.getJson(ticket));			// Convert object to JSON string and save into a file directly
+			mapper.writeValueAsString(ticket);
+
+			// Convert object to JSON string
+			String jsonInString1 = mapper.writeValueAsString(ticket.getName());
+			System.out.println(jsonInString1);
+
+			// Convert object to JSON string and pretty print
+			jsonInString1 = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(ticket);
+			System.out.println(jsonInString1);
+			out.println(jsonInString1);
+
+		} catch (JsonGenerationException e) {
+			e.printStackTrace();
+
+		}
 
 	}
 }

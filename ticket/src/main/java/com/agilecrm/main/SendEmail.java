@@ -3,11 +3,10 @@ package com.agilecrm.main;
 import java.util.*;
 import javax.mail.*;
 import javax.mail.internet.*;
-import javax.activation.*;
 
 public class SendEmail {
 	public static void main(String[] args) throws MessagingException {
-		String to = "hemanth2k17@gmail.com";
+		String to = "narinarahari12@gmail.com";
 		String subject = "Mail Sending without Installing Postfix by Narahari";
 		String msg = "Hai";
 		final String from = "naraharinaik7@gmail.com";

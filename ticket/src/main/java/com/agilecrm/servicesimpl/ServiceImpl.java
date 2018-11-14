@@ -3,6 +3,8 @@ package com.agilecrm.servicesimpl;
 import java.sql.SQLException;
 import java.util.List;
 
+import javax.mail.MessagingException;
+
 import com.agilecrm.dao.Dao;
 import com.agilecrm.daoimpl.DaoImpl;
 import com.agilecrm.model.Ticket;
@@ -26,21 +28,32 @@ public class ServiceImpl implements Services {
 	}
 
 	@Override
-	public List<Ticket> listTickets() throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Ticket> listTickets() throws SQLException, ClassNotFoundException {
+		return dao.listTickets();
 	}
 
 	@Override
 	public List<Ticket> getTicketById(Ticket ticket) throws SQLException, ClassNotFoundException {
-		// TODO Auto-generated method stub
-		return null;
+		return dao.getTicketById(ticket);
 	}
 
 	@Override
-	public boolean deleteContact(Ticket ticket) {
-		// TODO Auto-generated method stub
-		return false;
+	public int deleteTicket(Ticket ticket) {
+		return dao.deleteTicket(ticket);
+	}
+
+
+	@Override
+	public boolean sendTicketIdByEmail(Ticket ticket) throws MessagingException
+			 {
+	
+		return dao.sendTickeyByEmail(ticket);
+
+	}
+
+	@Override
+	public Ticket getJson(Ticket ticket) throws ClassNotFoundException, SQLException {
+		return dao.getJson(ticket);
 	}
 
 
